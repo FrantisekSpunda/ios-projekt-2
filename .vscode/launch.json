@@ -7,11 +7,11 @@
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
-      "externalConsole": true,
-      "cwd": "c:/Users/FRANTISEK-PC/OneDrive/c_dev/teste/app",
-      "program": "c:/Users/FRANTISEK-PC/OneDrive/c_dev/teste/app/build/Debug/outDebug",
+      "externalConsole": false,
+      "cwd": "/home/spundafr/vut.fit/ios/ios-projekt-2",
+      "program": "/home/spundafr/vut.fit/ios/ios-projekt-2/build/Debug/outDebug",
       "MIMode": "gdb",
-      "miDebuggerPath": "C:/MinGW/bin/gdb.exe",
+      "miDebuggerPath": "gdb",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",

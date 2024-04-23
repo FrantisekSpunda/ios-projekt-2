@@ -51,9 +51,8 @@
 		"**/requirements{/**,*}.{txt,in}": "pip-requirements",
 		"*.scss": "scss",
 		"*.tsx": "typescriptreact",
-		"stdlib.h": "c",
-		"main.h": "c",
+		"**/*.mustache": "html",
 		"lib.h": "c",
-		"stdio.h": "c"
+		"main.h": "c"
 	}
 }

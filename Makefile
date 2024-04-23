@@ -16,6 +16,7 @@ SRCS := $(shell find $(SOURCE_DIR) -type f -name "*.c")
 OBJS = $(patsubst $(SOURCE_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 HEADER_TEMPLATE := header.template.h
 CURRENT_YEAR := $(shell date +%Y)
+ARGS = $(ARGUMENTS)
 
 define style
 $(COLOR_$(2))$(FORMAT_$(3))$(1)$(RESET)
@@ -78,10 +79,10 @@ $(TARGET): $(OBJS)
 	fi;
 
 run:
-	@if [ ! -f $(BIN_DIR)/$(APPLICATION_NAME).exe ]; then \
+	@if [ ! -f $(BIN_DIR)/$(APPLICATION_NAME) ]; then \
 		echo -e " $(call style,Cannot run application!,RED,BOLD)\n You have to run $(call style,'make build',BLUE) first.";\
 	else \
-		cd ./$(BIN_DIR) && ./$(APPLICATION_NAME).exe;\
+		cd ./$(BIN_DIR) && ./$(APPLICATION_NAME) $(ARGS);\
 	fi;
 
 all: build run
