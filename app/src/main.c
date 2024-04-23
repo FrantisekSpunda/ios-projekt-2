@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author Frantisek Spunda
- * @date 2024-23-04
+ * @date 2024-24-04
  * @brief Second project to IOS
  *
  * @copyright Copyright (c) 2024
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     {
       skiers[i].id = i + 1;
       skiers[i].state = BREAKFAST;
-      skiers[i].stop_id = random_number(0, 9);
+      skiers[i].stop_id = random_number(0, config.stops - 1);
     }
   }
   /****** shared memory ******/
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
 
   if (process_id > 1) // only not in main process
   {
-    printf("SKIER START\n");
-    run_skier(process_id - 1, skiers, config);
+    // printf("SKIER START process: %i | data %i, %i, %i\n", process_id - 2, skiers[process_id - 2].id, skiers[process_id - 2].stop_id, skiers[process_id - 2].state);
+    run_skier(process_id - 2, skiers, config);
   }
 
   sem_close(skier_wait);
@@ -94,19 +94,22 @@ int main(int argc, char **argv)
 void run_skibus(skier_t *skiers, config_t config)
 {
 
-  for (int stop = 1; stop < config.stops + 1; stop++)
+  for (int stop = 0; stop < config.stops; stop++)
   {
-    usleep(random_number(0, config.maxRideTime));
+    usleep(random_number(999, 1000));
+    printf("skibus on stop %i\n", stop);
 
     sem_wait(skier_wait);
+
     for (int i = 0; i < config.skiers; i++)
     {
       if (skiers[i].state == WAITING && skiers[i].stop_id == stop)
       {
         skiers[i].state = ONRIDE;
-        printf("skier %i on stop %i in skibus %i\n", skiers[i].id, stop, skiers[i].state);
+        printf("skier %i in skibus at %i\n", skiers[i].id, stop);
       }
     }
+
     sem_post(skier_wait);
   }
 
@@ -120,21 +123,29 @@ void run_skibus(skier_t *skiers, config_t config)
     }
   }
 
+  int run_again = 0;
+
   for (int i = 0; i < config.skiers; i++)
   {
     if (skiers[i].state != IN_FINISH)
     {
-      run_skibus(skiers, config);
+      run_again = 1;
       break;
     }
   }
   sem_post(skier_wait);
+
+  if (run_again)
+    run_skibus(skiers, config);
 }
 
 void run_skier(int skier_id, skier_t *skiers, config_t config)
 {
-  usleep(random_number(0, config.maxComeTime));
+  // usleep(1000);
+  // usleep(random_number(0, config.maxComeTime));
+  usleep(random_number(0, 1000));
 
+  // printf("run skier %i\n", skier_id);
   sem_wait(skier_wait);
 
   skiers[skier_id].state = WAITING;

@@ -1,7 +1,7 @@
 /**
  * @file helpers.c
  * @author Frantisek Spunda
- * @date 2024-23-04
+ * @date 2024-24-04
  * @brief Second project to IOS
  *
  * @copyright Copyright (c) 2024
@@ -18,7 +18,7 @@ void shm_free(pid_t child_pid, config_t config, int shmid)
   // printf("Arguments: skiers-%i ; stops-%i ; skibusCapacity-%i ; maxComeTime-%i ; maxRideTime-%i\n",
   //        config.skiers, config.stops, config.skibusCapacity, config.maxComeTime, config.maxRideTime);
 
-  for (int i = 0; i < config.skiers; i++)
+  for (int i = 0; i < config.skiers + 1; i++)
   { // Uprav podle počtu procesů, které jsi vytvořil
     wait(NULL);
   }
