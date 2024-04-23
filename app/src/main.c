@@ -1,119 +1,144 @@
 /**
  * @file main.c
- * @author Your name
+ * @author Frantisek Spunda
  * @date 2024-23-04
- * @brief Description of your project
+ * @brief Second project to IOS
  *
  * @copyright Copyright (c) 2024
  *
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>    // fork()
-#include <sys/types.h> // pid_t
-#include <semaphore.h> // semafor
-#include <sys/shm.h>   // share memory
-
 #include "main.h"
+#include "helpers.h"
+#include <asm-generic/fcntl.h>
 
-typedef struct
-{
-  int skiers;
-  int stops;
-  int skibusCapacity;
-  int maxComeTime;
-  int maxRideTime;
-} arguments_t;
-
-typedef enum
-{
-  WAITING,
-  BREAKFAST,
-  ONRIDE,
-} skier_state_t;
-
-typedef struct
-{
-  int id;
-  skier_state_t state;
-} skier_t;
-
-#define SHARED_MEMORY_SIZE 1024
+sem_t *skier_wait;
 
 int main(int argc, char **argv)
 {
+  skier_wait = sem_open("/my_semaphore", O_CREAT | O_EXCL, 0644, 1);
+  config_t config = config_setup(argc, argv);
 
-  /****** args ******/
-  if (argc != 6)
-  {
-    fprintf(stderr, "Not enough arguments!!\n");
-    return 1;
-  }
-
-  arguments_t config = {
-      .skiers = atoi(argv[1]),
-      .stops = atoi(argv[2]),
-      .skibusCapacity = atoi(argv[3]),
-      .maxComeTime = atoi(argv[4]),
-      .maxRideTime = atoi(argv[5]),
-  };
-  /****** args ******/
-
-  /****** shm ******/
-  key_t key = ftok("/tmp", 'A');
-  int shmid = shmget(key, SHARED_MEMORY_SIZE, IPC_CREAT | 0666);
-
-  if (shmid == -1)
-  {
-    perror("shmget");
-    return 1;
-  }
-
-  /****** shm ******/
-
+  /****** fork inicialization ******/
   pid_t child_pid;
+  int process_id = 0;
 
-  // skiers
-  for (int i = 0; i < config.skiers; i++)
+  for (int i = 0; i < config.skiers + 1; i++)
   {
     child_pid = fork();
 
     if (child_pid == 0)
       break;
-    if (child_pid < 0)
+    else if (child_pid < 0)
     {
-      fprintf(stderr, "Error while forking with error \"%i\"", child_pid);
-      return 1;
+      fprintf(stderr, "Error \"fork\" with numb. \"%i\"", child_pid);
+      exit(1);
+    }
+    else
+    {
+      process_id++;
+      srand(time(NULL) * (getpid() + process_id));
+    }
+  }
+  /****** fork inicialization ******/
+
+  /****** shared memory ******/
+  key_t key = ftok("/tmp", 'A');
+
+  int skiers_m = shmget(key, sizeof(skier_t) * config.skiers, IPC_CREAT | 0666);
+  if (skiers_m == 1)
+  {
+    fprintf(stderr, "Error \"shmget\"");
+    exit(1);
+  }
+
+  skier_t *skiers = shmat(skiers_m, NULL, 0);
+  if (skiers == -1)
+  {
+    fprintf(stderr, "Error \"shmget\"");
+    exit(1);
+  }
+
+  if (process_id == 0) // only in main process
+  {
+
+    for (int i = 0; i < config.skiers; i++)
+    {
+      skiers[i].id = i + 1;
+      skiers[i].state = BREAKFAST;
+      skiers[i].stop_id = random_number(0, 9);
+    }
+  }
+  /****** shared memory ******/
+
+  if (process_id == 1)
+  {
+    printf("SKIBUS START\n");
+    run_skibus(skiers, config);
+  }
+
+  if (process_id > 1) // only not in main process
+  {
+    printf("SKIER START\n");
+    run_skier(process_id - 1, skiers, config);
+  }
+
+  sem_close(skier_wait);
+  sem_unlink("/my_semaphore");
+  shmdt(skiers);
+  shm_free(child_pid, config, skiers_m);
+
+  return 0;
+}
+
+void run_skibus(skier_t *skiers, config_t config)
+{
+
+  for (int stop = 1; stop < config.stops + 1; stop++)
+  {
+    usleep(random_number(0, config.maxRideTime));
+
+    sem_wait(skier_wait);
+    for (int i = 0; i < config.skiers; i++)
+    {
+      if (skiers[i].state == WAITING && skiers[i].stop_id == stop)
+      {
+        skiers[i].state = ONRIDE;
+        printf("skier %i on stop %i in skibus %i\n", skiers[i].id, stop, skiers[i].state);
+      }
+    }
+    sem_post(skier_wait);
+  }
+
+  sem_wait(skier_wait);
+  for (int i = 0; i < config.skiers; i++)
+  {
+    if (skiers[i].state == ONRIDE)
+    {
+      skiers[i].state = IN_FINISH;
+      printf("skier %i in finish\n", skiers[i].id);
     }
   }
 
-  // IN FORKS
-
-  int *shared_memory = shmat(shmid, NULL, 0);
-
-  if (shared_memory == (char *)-1)
+  for (int i = 0; i < config.skiers; i++)
   {
-    fprintf(stderr, "shmat");
-    return 1;
+    if (skiers[i].state != IN_FINISH)
+    {
+      run_skibus(skiers, config);
+      break;
+    }
   }
+  sem_post(skier_wait);
+}
 
-  *shared_memory = *shared_memory + 1;
+void run_skier(int skier_id, skier_t *skiers, config_t config)
+{
+  usleep(random_number(0, config.maxComeTime));
 
-  printf("memory %i\n", *shared_memory);
-  printf("bobky %i,%i,%i,%i,%i\n", config.skiers, config.stops, config.skibusCapacity, config.maxComeTime, config.maxRideTime);
+  sem_wait(skier_wait);
 
-  shmdt(shared_memory);
+  skiers[skier_id].state = WAITING;
+  printf("skier %i on stop %i\n", skiers[skier_id].id, skiers[skier_id].stop_id);
 
-  if (child_pid == 0)
-    return 0;
-
-  for (int i = 0; i < 3; i++)
-  { // Uprav podle počtu procesů, které jsi vytvořil
-    wait(NULL);
-  }
-
-  // Vyčištění sdílené paměti
-  shmctl(shmid, IPC_RMID, NULL);
-  return 0;
+  sem_post(skier_wait);
 }
