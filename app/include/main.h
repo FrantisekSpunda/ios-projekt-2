@@ -46,11 +46,12 @@ typedef enum
 
 typedef struct
 {
-  skibus_state_t state;
-  int stop_id;
-};
+  int skibus_stop_id;
+  int skibus_filled;
+  int counter;
+} storage_t;
 
-void run_skier(int skier_id, skier_t *skiers, config_t config);
-void run_skibus(skier_t *skiers, config_t config);
+void run_skier(int skier_id, skier_t *skiers, storage_t *storage, config_t config);
+void run_skibus(skier_t *skiers, storage_t *storage, config_t config);
 
 #endif

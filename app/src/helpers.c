@@ -1,31 +1,14 @@
 /**
  * @file helpers.c
- * @author Frantisek Spunda
- * @date 2024-24-04
- * @brief Second project to IOS
+ * @author Your name
+ * @date 2024-25-04
+ * @brief Description of your project
  *
  * @copyright Copyright (c) 2024
  *
  */
 
 #include "helpers.h"
-
-void shm_free(pid_t child_pid, config_t config, int shmid)
-{
-  if (child_pid == 0)
-    exit(0);
-
-  // printf("Arguments: skiers-%i ; stops-%i ; skibusCapacity-%i ; maxComeTime-%i ; maxRideTime-%i\n",
-  //        config.skiers, config.stops, config.skibusCapacity, config.maxComeTime, config.maxRideTime);
-
-  for (int i = 0; i < config.skiers + 1; i++)
-  { // Uprav podle počtu procesů, které jsi vytvořil
-    wait(NULL);
-  }
-
-  // Vyčištění sdílené paměti
-  shmctl(shmid, IPC_RMID, NULL);
-}
 
 config_t config_setup(int argc, char **argv)
 {
