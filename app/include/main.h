@@ -51,7 +51,22 @@ typedef struct
   int counter;
 } storage_t;
 
+typedef enum
+{
+  M_SKIER_START,
+  M_SKIER_ARRIVED,
+  M_SKIER_BOARDING,
+  M_SKIER_SKIING,
+  M_SKIBUS_START,
+  M_SKIBUS_ARRIVED,
+  M_SKIBUS_LEAVING,
+  M_SKIBUS_ARRIVED_TO_FINAL,
+  M_SKIBUS_LEAVING_FINAL,
+  M_SKIBUS_FINISH
+} message_type_t;
+
 void run_skier(int skier_id, skier_t *skiers, storage_t *storage, config_t config);
 void run_skibus(skier_t *skiers, storage_t *storage, config_t config);
+void print_out(message_type_t message_type, storage_t *storage, skier_t *skiers, int i, int shm_check);
 
 #endif
