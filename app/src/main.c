@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   }
   /****** file inicialization ******/
 
-  storage_access = sem_open("/fjesiofjesio", O_CREAT | O_EXCL, 0644, 1);
+  storage_access = sem_open("/fjiesofesji", O_CREAT | O_EXCL, 0644, 1);
   config_t config = config_setup(argc, argv);
 
   /****** fork inicialization ******/
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
   }
 
   sem_close(storage_access);
-  sem_unlink("/fjesiofjesio");
+  sem_unlink("/fjiesofesji");
 
   shmdt(storage);
   shmdt(skiers);
@@ -232,8 +232,8 @@ void print_out(message_type_t message_type, storage_t *storage, skier_t *skiers,
     break;
 
   case M_SKIER_ARRIVED:
-    printf("%i: L %i: arrived to %i\n", storage->counter, skiers[i].id, skiers[i].stop_id);
-    fprintf(file, "%i: L %i: arrived to %i\n", storage->counter, skiers[i].id, skiers[i].stop_id);
+    printf("%i: L %i: arrived to %i\n", storage->counter, skiers[i].id, skiers[i].stop_id + 1);
+    fprintf(file, "%i: L %i: arrived to %i\n", storage->counter, skiers[i].id, skiers[i].stop_id + 1);
     break;
   case M_SKIER_BOARDING:
     printf("%i: L %i: boarding\n", storage->counter, skiers[i].id);
