@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author Your name
- * @date 2024-25-04
+ * @date 2024-26-04
  * @brief Description of your project
  *
  * @copyright Copyright (c) 2024
@@ -138,6 +138,7 @@ int main(int argc, char **argv)
     wait(NULL);
   }
 
+  fclose(file);
   sem_close(storage_access);
   sem_unlink("/fjiesofesji");
 
