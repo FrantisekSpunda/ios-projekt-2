@@ -1,8 +1,8 @@
 /**
  * @file main.c
- * @author Your name
+ * @author František Špunda
  * @date 2024-27-04
- * @brief Description of your project
+ * @brief IOS projekt 2 - VUT FIT
  *
  * @copyright Copyright (c) 2024
  *
