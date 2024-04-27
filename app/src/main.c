@@ -15,7 +15,6 @@ FILE *file;
 
 int main(int argc, char **argv)
 {
-
   config_t config = config_setup(argc, argv);
 
   /****** file inicialization ******/
@@ -27,30 +26,31 @@ int main(int argc, char **argv)
   }
   /****** file inicialization ******/
 
-  /******* semaphore ***************/
-  storage_access = sem_open("/fjeskl", O_CREAT | O_EXCL, 0644, 1);
+  /******* semaphore inicialization ***************/
+  storage_access = sem_open("/semaphore", O_CREAT | O_EXCL, 0644, 1);
   if (storage_access == SEM_FAILED)
   {
-    fprintf(stderr, "Error sem_open for storage_access");
+    fprintf(stderr, "Error sem_open for storage_access\n");
     semaphore_destroy();
     fclose(file);
     exit(1);
   }
-  /******* semaphore ***************/
+  /******* semaphore inicialization ***************/
 
-  /****** fork inicialization ******/
+  /****** processes inicialization ******/
   pid_t child_pid;
   int process_id = 0;
 
   for (int i = 0; i < config.skiers + 1; i++)
   {
     child_pid = fork();
+    srand(time(NULL) ^ getpid());
 
     if (child_pid == 0)
       break;
     else if (child_pid < 0)
     {
-      fprintf(stderr, "Error \"fork\" with numb. \"%i\"", child_pid);
+      fprintf(stderr, "Error \"fork\" with numb. \"%i\"\n", child_pid);
       semaphore_destroy();
       fclose(file);
       exit(1);
@@ -58,10 +58,9 @@ int main(int argc, char **argv)
     else
     {
       process_id++;
-      srand(time(NULL) * (getpid() + process_id));
     }
   }
-  /****** fork inicialization ******/
+  /****** processes inicialization ******/
 
   /****** shared memory ******/
   key_t key1;
@@ -73,7 +72,7 @@ int main(int argc, char **argv)
     key1 = ftok("/tmp/foo", 0);
   else
   {
-    fprintf(stderr, "Error open key 1");
+    fprintf(stderr, "Error open key 1\n");
     semaphore_destroy();
     fclose(file);
     exit(1);
@@ -82,7 +81,7 @@ int main(int argc, char **argv)
     key2 = ftok("/tmp/foo2", 0);
   else
   {
-    fprintf(stderr, "Error open key 2");
+    fprintf(stderr, "Error open key 2\n");
     semaphore_destroy();
     fclose(file);
     exit(1);
@@ -131,6 +130,7 @@ int main(int argc, char **argv)
   }
   /****** shared memory ******/
 
+  /****** fill shared memory, run function for processes ******/
   if (process_id == 0) // only in main process
   {
     sem_wait(storage_access);
@@ -154,6 +154,7 @@ int main(int argc, char **argv)
   {
     run_skier(process_id - 2, skiers, storage, config);
   }
+  /****** fill shared memory, run function for processes ******/
 
   /************ cleaing *************/
   if (child_pid == 0)
@@ -168,25 +169,31 @@ int main(int argc, char **argv)
   semaphore_destroy();
   shm_storage_destroy(storage_m, storage);
   shm_skiers_destroy(skiers_m, skiers);
+  /************ cleaing *************/
 
   return 0;
 }
 
 void run_skibus(skier_t *skiers, storage_t *storage, config_t config)
 {
+  // empty the bus on start
   sem_wait(storage_access);
   storage->skibus_filled = 0;
   sem_post(storage_access);
 
+  // drive to all stops
   for (int stop = 0; stop < config.stops; stop++)
   {
-    usleep(random_number(999, 1000));
+    // time between stops
+    usleep(random_number(0, config.maxRideTime));
     print_out(M_SKIBUS_ARRIVED, storage, skiers, stop, 1);
 
+    // skiers board the bus
     for (int i = 0; i < config.skiers; i++)
     {
       sem_wait(storage_access);
-      // printf("---skier id %i\n", skiers[i].id);
+
+      // condition for skier to board the bus
       if (skiers[i].state == WAITING && skiers[i].stop_id == stop && storage->skibus_filled < config.skibusCapacity)
       {
         skiers[i].state = ONRIDE;
@@ -203,6 +210,7 @@ void run_skibus(skier_t *skiers, storage_t *storage, config_t config)
 
   print_out(M_SKIBUS_ARRIVED_TO_FINAL, storage, skiers, 0, 0);
 
+  // skiers get off the buss
   for (int i = 0; i < config.skiers; i++)
   {
     if (skiers[i].state == ONRIDE)
@@ -216,6 +224,7 @@ void run_skibus(skier_t *skiers, storage_t *storage, config_t config)
 
   int run_again = 0;
 
+  // skibus will go another round if there aren't some skiers in finish
   for (int i = 0; i < config.skiers; i++)
     if (skiers[i].state != IN_FINISH)
     {
@@ -233,10 +242,11 @@ void run_skibus(skier_t *skiers, storage_t *storage, config_t config)
 void run_skier(int skier_id, skier_t *skiers, storage_t *storage, config_t config)
 {
   print_out(M_SKIER_START, storage, skiers, skier_id, 1);
-  // usleep(random_number(0, config.maxComeTime));
-  usleep(random_number(0, 1000));
+  // time that skier arrive to stop
+  usleep(random_number(0, config.maxComeTime));
 
   sem_wait(storage_access);
+  // ariving skier to stop
   skiers[skier_id].state = WAITING;
   print_out(M_SKIER_ARRIVED, storage, skiers, skier_id, 0);
   sem_post(storage_access);
@@ -257,6 +267,36 @@ config_t config_setup(int argc, char **argv)
       .maxComeTime = atoi(argv[4]),
       .maxRideTime = atoi(argv[5]),
   };
+
+  if (config.skiers < 0 || config.skiers > 20000)
+  {
+    fprintf(stderr, "Number of skiers must be between 0 and 20000\n");
+    exit(1);
+  }
+
+  if (config.stops < 1 || config.stops > 10)
+  {
+    fprintf(stderr, "Number of stops must be between 1 and 10\n");
+    exit(1);
+  }
+
+  if (config.skibusCapacity < 10 || config.stops > 100)
+  {
+    fprintf(stderr, "Capacity of skibus must be between 10 and 100\n");
+    exit(1);
+  }
+
+  if (config.maxComeTime < 0 || config.maxComeTime > 10000)
+  {
+    fprintf(stderr, "Max time, that skier is having breakfast, must be between 0 and 10000\n");
+    exit(1);
+  }
+
+  if (config.maxRideTime < 0 || config.maxRideTime > 1000)
+  {
+    fprintf(stderr, "Max time between two stops must be between 0 and 1000\n");
+    exit(1);
+  }
 
   return config;
 }
@@ -326,7 +366,7 @@ void print_out(message_type_t message_type, storage_t *storage, skier_t *skiers,
 void semaphore_destroy()
 {
   sem_close(storage_access);
-  sem_unlink("/fjeskl");
+  sem_unlink("/semaphore");
 }
 
 void shm_skiers_destroy(int skiers_m, skier_t *skiers)
