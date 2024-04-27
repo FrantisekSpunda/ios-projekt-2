@@ -19,7 +19,7 @@
 - got to project folder `cd ios-project-2`
 - run `make all` (or `make build` --> `make run`)
 
-### Arguments
+### Arguments 📂
 
 Change aruments in `config.cfg` in variable `ARGUMENTS`
 
@@ -35,7 +35,7 @@ ARGUMENTS=<L> <Z> <K> <TL> <TB>
 - TL: max time, that skier will have breakfast (in ms)
 - TB: max time between two stops (in ms)
 
-### Description
+### Description 📋
 
 Project in winter semester of the first year on FIT VUT in Brno.
 
