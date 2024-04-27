@@ -23,9 +23,9 @@
 
 Change aruments in `config.cfg` in variable `ARGUMENTS`
 
-```
+```c
 ...
-ARGUMENTS <L> <Z> <K> <TL> <TB>
+ARGUMENTS=<L> <Z> <K> <TL> <TB>
 ...
 ```
 
