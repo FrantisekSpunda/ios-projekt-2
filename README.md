@@ -1,8 +1,8 @@
-<h2 align="center">C scaffolding structure</h2>
+<h2 align="center">IOS projekt 2</h2>
 <p align="center">
-  Scaffolding structure for C projects and custom Makefile
+  FIT VUT Brno
   <br>
-  <strong align="center">Use this template for your own projects 😊</strong>
+  <!-- <strong align="center">Use this template for your own projects 😊</strong> -->
 </p>
 
 ---
@@ -11,18 +11,37 @@
 
 - `gcc` compiler or another compiler for C
 - `make` library to run Makefile
-- `Git Bash` (you need some linux commnads so you cant use this with cmd or other terminal)
-- 🧠
+- `Linux / wsl` must be run on linux
 
-### Installation and first run 🐱
+### How to run 🏃‍♀️
 
-- clone repozitory `git clone https://github.com/FrantisekSpunda/C-scaffolding.git`
-- got to project folder `cd c-scaffolding`
-- run `make init` to create config.cfg file
-- edit `config.cfg` as needed
-- run `make all` (or `make build` and `make run`)
+- clone repozitory `git clone https://github.com/FrantisekSpunda/ios-projekt-2.git`
+- got to project folder `cd ios-project-2`
+- run `make all` (or `make build` --> `make run`)
 
-### Usage 🐔
+### Arguments
+
+Change aruments in `config.cfg` in variable `ARGUMENTS`
+
+```
+...
+ARGUMENTS <L> <Z> <K> <TL> <TB>
+...
+```
+
+- L: number of skeirs
+- Z: number of stops
+- K: skibus capacity
+- TL: max time, that skier will have breakfast (in ms)
+- TB: max time between two stops (in ms)
+
+### Description
+
+Project in winter semester of the first year on FIT VUT in Brno.
+
+Programed in C. Three types of processes: (0) main process, (1) skibus, (2) skiers. Skiers will arrive in random time to stop. Skibus is riding in random time from stop to stop until all skiers are in finish.
+
+### Makefile usage 🐔
 
 Using makefile you can run commands for compilation, generating headers and new modules etc.
 
