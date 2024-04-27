@@ -5,8 +5,6 @@
   <!-- <strong align="center">Use this template for your own projects 😊</strong> -->
 </p>
 
----
-
 ### Requirements 🧾
 
 - `gcc` compiler or another compiler for C
@@ -40,6 +38,8 @@ ARGUMENTS=<L> <Z> <K> <TL> <TB>
 Project in winter semester of the first year on FIT VUT in Brno.
 
 Programed in C. Three types of processes: (0) main process, (1) skibus, (2) skiers. Skiers will arrive in random time to stop. Skibus is riding in random time from stop to stop until all skiers are in finish.
+
+There is used shared memory between processes, semaphor for access shared memory and forking processes
 
 ### Makefile usage 🐔
 
