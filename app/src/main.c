@@ -1,7 +1,7 @@
 /**
  * @file main.c
  * @author František Špunda
- * @date 2024-27-04
+ * @date 2024-28-04
  * @brief IOS projekt 2 - VUT FIT
  *
  * @copyright Copyright (c) 2024
