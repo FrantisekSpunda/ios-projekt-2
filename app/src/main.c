@@ -158,10 +158,18 @@ int main(int argc, char **argv)
 
   /************ cleaing *************/
   if (child_pid == 0)
-    exit(0);
+  {
+    fclose(file);
+    sem_close(storage_access);
+    shmdt(storage);
+    shmdt(skiers);
 
+    exit(0);
+  }
+
+  // wait for child processes to end
   for (int i = 0; i < config.skiers + 1; i++)
-  { // Uprav podle počtu procesů, které jsi vytvořil
+  {
     wait(NULL);
   }
 
